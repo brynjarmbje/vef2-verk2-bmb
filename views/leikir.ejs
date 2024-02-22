@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="/css/styles.css">
+
 <%- include('header') -%>
 
 <h1>Seinustu leikir</h1>
@@ -5,12 +7,13 @@
 <table>
   <th>
     <td>Heima lið</td>
-    <td>Heima lið skor</td>
+    <td>Heima skor</td>
     <td>Útilið</td>
     <td>Útilið skor</td>
   </th>
 <% for (const game of locals.games) { %>
   <tr>
+    <td></td>
     <td><%= game.home.name %></td>
     <td><%= game.home.score %></td>
     <td><%= game.away.name %></td>

@@ -82,6 +82,22 @@ passport.deserializeUser(async (id, done) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.post('/login',
+  passport.authenticate('local', { successRedirect: '/',
+                                   failureRedirect: '/login',
+                                   failureFlash: true })
+);
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+}
+
+app.get('/some-protected-route', ensureAuthenticated, (req, res) => {
+  res.render('protected');
+});
+
 app.use('/', indexRouter);
 app.use('/', adminRouter);
 app.use(express.static(join(path, '../public')));

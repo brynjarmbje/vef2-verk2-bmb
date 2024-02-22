@@ -1,5 +1,6 @@
 import express from 'express';
-import { getGames } from '../lib/db.js';
+import { getGames, getStandings } from '../lib/db.js';
+
 
 export const indexRouter = express.Router();
 
@@ -14,6 +15,7 @@ async function leikirRoute(req, res) {
   const games = await getGames();
 
   return res.render('leikir', {
+
     title: 'Leikir',
     games,
     time: new Date().toISOString(),
@@ -21,9 +23,16 @@ async function leikirRoute(req, res) {
 }
 
 async function stadaRoute(req, res) {
-  return res.render('stada', {
-    title: 'Staðan',
-  });
+  try {
+    const standings = await getStandings();
+    res.render('stada', {
+      title: 'Staðan í deildinni',
+      standings,
+    });
+  } catch (error) {
+    console.error('Error fetching standings:', error);
+    res.status(500).send('Error fetching standings');
+  }
 }
 
 indexRouter.get('/', indexRoute);

@@ -1,5 +1,56 @@
+<link rel="stylesheet" href="/css/styles.css">
+
 <%- include('header') -%>
 
-admin!
+<h2>Leikir</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Dagsetning</th>
+      <th>Heimalið</th>
+      <th>Stig Heimaliðs</th>
+      <th>Útilið</th>
+      <th>Stig Útiliðs</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% games.forEach(game => { %>
+      <tr>
+        <td><%= game.date %></td>
+        <td><%= game.home.name %></td>
+        <td><%= game.home.score %></td>
+        <td><%= game.away.name %></td>
+        <td><%= game.away.score %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+<form action="/admin/add-game" method="POST">
+  <label for="date">Dagsetning leiks:</label>
+  <input type="date" id="date" name="date" required>
+
+  <label for="home">Heimalið:</label>
+  <select id="home" name="home" required>
+    <% teams.forEach(function(team){ %>
+      <option value="<%= team.id %>"><%= team.name %></option>
+    <% }); %>
+  </select>
+
+  <label for="away">Útilið:</label>
+  <select id="away" name="away" required>
+    <% teams.forEach(function(team){ %>
+      <option value="<%= team.id %>"><%= team.name %></option>
+    <% }); %>
+  </select>
+
+  <label for="home_score">Stig heimaliðs:</label>
+  <input type="number" id="home_score" name="home_score" min="0" required>
+
+  <label for="away_score">Stig útiliðs:</label>
+  <input type="number" id="away_score" name="away_score" min="0" required>
+
+  <button type="submit">Bæta við leik</button>
+</form>
 
 <%- include('footer') -%>
