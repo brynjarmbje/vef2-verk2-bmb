@@ -10,7 +10,7 @@ import bcrypt from 'bcrypt';
 const records = [
   {
     id: 1,
-    username: 'admin',
+    username: 'bmbadmin',
     name: 'Hr. admin',
 
     // 123
@@ -19,8 +19,8 @@ const records = [
   },
   {
     id: 2,
-    username: 'oli',
-    name: 'Óli',
+    username: 'brynjar',
+    name: 'Brynjar',
 
     // 123
     password: '$2a$11$pgj3.zySyFOvIQEpD7W6Aund1Tw.BFarXxgLJxLbrzIv/4Nteisii',

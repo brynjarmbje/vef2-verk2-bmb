@@ -1,7 +1,7 @@
 import express from 'express';
 import passport from 'passport';
 import { insertGame } from '../lib/db.js';
-
+import { getGames } from '../lib/db.js';
 export const adminRouter = express.Router();
 
 async function indexRoute(req, res) {
@@ -13,11 +13,13 @@ async function indexRoute(req, res) {
 async function adminRoute(req, res) {
   const user = req.user ?? null;
   const loggedIn = req.isAuthenticated();
+  const games = await getGames();
 
   return res.render('admin', {
     title: 'Admin upplýsingar, mjög leynilegt',
     user,
     loggedIn,
+    games,
   });
 }
 
