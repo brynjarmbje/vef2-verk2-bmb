@@ -39,60 +39,73 @@ export async function query(q, values = []) {
 }
 
 export async function getGames() {
-  const q = `
-    SELECT
-      date,
-      home_team.name AS home_name,
-      home_score,
-      away_team.name AS away_name,
-      away_score
-    FROM
-      games
-    LEFT JOIN
-      teams AS home_team ON home_team.id = games.home
-    LEFT JOIN
-      teams AS away_team ON away_team.id = games.away
-  `;
+  try {
+    const q = `
+      SELECT
+        games.date,
+        home_team.name AS "homeName",
+        games.home_score AS "homeScore",
+        away_team.name AS "awayName",
+        games.away_score AS "awayScore"
+      FROM
+        games
+      LEFT JOIN
+        teams AS home_team ON home_team.id = games.home
+      LEFT JOIN
+        teams AS away_team ON away_team.id = games.away
+    `;
 
-  const result = await query(q);
+    const result = await query(q);
 
-  const games = [];
-  if (result && (result.rows?.length ?? 0) > 0) {
-    for (const row of result.rows) {
-      const game = {
-        date: row.date,
-        home: {
-          name: row.home_name,
-          score: row.home_score,
-        },
-        away: {
-          name: row.away_name,
-          score: row.away_score,
-        },
-      };
-      games.push(game);
+    const games = [];
+
+    if (result && (result.rows?.length ?? 0) > 0) {
+      for (const row of result.rows) {
+        const game = {
+          date: row.date,
+          home: {
+            name: row.homeName,
+            score: row.homeScore,
+          },
+          away: {
+            name: row.awayName,
+            score: row.awayScore,
+          },
+        };
+        games.push(game);
+      }
     }
-      // Calculate standings
+    // Returns games array
     return games;
+  } catch (error) {
+    console.error('An error occurred:', error);
+    throw error;
   }
 }
 
 export async function getStandings() {
   const queryText = `
-  SELECT
-  teams.id,
-  teams.name,
-  COUNT(games.id) AS played,
-  COUNT(CASE WHEN (games.home = teams.id AND games.home_score > games.away_score) OR (games.away = teams.id AND games.away_score > games.home_score) THEN 1 END) AS wins,
-  COUNT(CASE WHEN (games.home = teams.id AND games.home_score < games.away_score) OR (games.away = teams.id AND games.away_score < games.home_score) THEN 1 END) AS losses,
-  SUM(CASE WHEN games.home = teams.id THEN games.home_score ELSE games.away_score END) AS goals_for,
-  SUM(CASE WHEN games.home = teams.id THEN games.away_score ELSE games.home_score END) AS goals_against,
-  3 * COUNT(CASE WHEN (games.home = teams.id AND games.home_score > games.away_score) OR (games.away = teams.id AND games.away_score > games.home_score) THEN 1 END) AS points
-FROM
-  teams
-LEFT JOIN games ON games.home = teams.id OR games.away = teams.id
-GROUP BY teams.id
-ORDER BY points DESC, (SUM(CASE WHEN games.home = teams.id THEN games.home_score ELSE games.away_score END) - SUM(CASE WHEN games.home = teams.id THEN games.away_score ELSE games.home_score END)) DESC, SUM(CASE WHEN games.home = teams.id THEN games.home_score ELSE games.away_score END) DESC, teams.name;
+    SELECT
+      teams.id,
+      teams.name,
+      COUNT(games.id) AS "played",
+      COUNT(CASE WHEN (games.home = teams.id AND games.home_score > games.away_score) OR
+                      (games.away = teams.id AND games.away_score > games.home_score) THEN 1 END) AS "wins",
+      COUNT(CASE WHEN (games.home = teams.id AND games.home_score < games.away_score) OR
+                      (games.away = teams.id AND games.away_score < games.home_score) THEN 1 END) AS "losses",
+      SUM(CASE WHEN games.home = teams.id THEN games.home_score ELSE games.away_score END) AS "goalsFor",
+      SUM(CASE WHEN games.home = teams.id THEN games.away_score ELSE games.home_score END) AS "goalsAgainst",
+      3 * COUNT(CASE WHEN (games.home = teams.id AND games.home_score > games.away_score) OR
+                          (games.away = teams.id AND games.away_score > games.home_score) THEN 1 END) AS "points"
+    FROM
+      teams
+    LEFT JOIN games ON games.home = teams.id OR games.away = teams.id
+    GROUP BY teams.id
+    ORDER BY "points" DESC,
+             (SUM(CASE WHEN games.home = teams.id THEN games.home_score ELSE games.away_score END) -
+              SUM(CASE WHEN games.home = teams.id THEN games.away_score ELSE games.home_score END)) DESC,
+             SUM(CASE WHEN games.home = teams.id THEN games.home_score ELSE games.away_score END) DESC,
+             teams.name;
   `;
   try {
     const result = await query(queryText);
@@ -114,9 +127,10 @@ export async function getTeams() {
   }
 }
 
-export async function insertGame(date, home, away, home_score, away_score) {
-  const q = 'INSERT INTO games (date, home, away, home_score, away_score) VALUES ($1, $2, $3, $4, $5);';
-  const values = [date, home, away, home_score, away_score];
+export async function insertGame(date, home, away, homeScore, awayScore) {
+  const q = `INSERT INTO games (date, home, away, home_score, away_score)
+            VALUES ($1, $2, $3, $4, $5);`;
+  const values = [date, home, away, homeScore, awayScore];
 
   try {
       await query(q, values);

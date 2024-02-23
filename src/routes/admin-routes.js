@@ -1,8 +1,8 @@
 import express from 'express';
 import passport from 'passport';
-import { insertGame } from '../lib/db.js';
-import { getGames, getTeams } from '../lib/db.js';
 import xss from 'xss';
+import { insertGame , getGames, getTeams } from '../lib/db.js';
+
 export const adminRouter = express.Router();
 
 async function indexRoute(req, res) {
@@ -13,12 +13,12 @@ async function indexRoute(req, res) {
       isAuthenticated: req.isAuthenticated(),
       user: req.user // Make sure this exists and has the data you expect
     });
-  } else {
+  }
     // User is not logged in
     return res.render('login', {
       title: 'Innskráning',
     });
-  }
+
 }
 
 async function adminRoute(req, res) {
@@ -48,23 +48,27 @@ function ensureLoggedIn(req, res, next) {
 }
 
 function skraRoute(req, res, next) {
-  return res.render('skra', {
-    title: 'Skrá leik',
-  });
+  try {
+    return res.render('skra', {
+      title: 'Skrá leik',
+    });
+  } catch(error)  {
+    next(error); // express error handler
+    return next(error);
+  }
 }
 
 async function skraRouteInsert(req, res, next) {
   // TODO mjög hrátt allt saman, vantar validation!
-  const { home_name, home_score, away_name, away_score } = req.body;
+  const { homeName, homeScore, awayName, awayScore } = req.body;
 
   try {
     // Await the insertion of the game
-    await insertGame(home_name, parseInt(home_score, 10), away_name, parseInt(away_score, 10));
+    await insertGame(homeName, parseInt(homeScore, 10), awayName, parseInt(awayScore, 10));
     res.redirect('/leikir'); // Redirect or handle success as needed
   } catch (error) {
-    console.error('Error inserting game:', error);
-    // Handle the error, possibly by rendering the form again with an error message
-    res.redirect('/admin'); // Consider providing feedback about the error
+      next(error);    // Handle the error
+      res.redirect('/admin'); // Consider providing feedback about the error
   }
 }
 
@@ -84,26 +88,27 @@ adminRouter.post(
   })
 );
 adminRouter.post('/admin/add-game', ensureLoggedIn, async (req, res) => {
-  const date = req.body.date; // Assuming date handling is safe
+  const {date} = req.body; // Assuming date handling is safe
   const home = xss(req.body.home); // Sanitize input
   const away = xss(req.body.away); // Sanitize input
   // Parse scores as integers
-  const home_score = parseInt(req.body.home_score, 10);
-  const away_score = parseInt(req.body.away_score, 10);
+  const homeScore = parseInt(req.body.homeScore, 10);
+  const awayScore = parseInt(req.body.awayScore, 10);
 
   // Check for NaN values in scores
-  if (isNaN(home_score) || isNaN(away_score)) {
+  if (Number.isNaN(homeScore) || Number.isNaN(awayScore)) {
     // Redirect back to the form with a message
     return res.status(400).send('Invalid scores provided.');
   }
 
   try {
-    await insertGame(date, home, away, home_score, away_score);
+    await insertGame(date, home, away, homeScore, awayScore);
     // Redirect to the games list page or wherever appropriate
-    res.redirect('/leikir');
+    return res.redirect('/leikir'); // Explicit return
   } catch (error) {
     console.error('Error inserting game:', error);
     // Handle the error appropriately
     res.status(500).send('An error occurred while adding the game.');
+    return res.status(500).send('An error occurred while adding the game.');
   }
 });
