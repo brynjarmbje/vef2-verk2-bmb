@@ -2,6 +2,7 @@ import express from 'express';
 import passport from 'passport';
 import { insertGame } from '../lib/db.js';
 import { getGames, getTeams } from '../lib/db.js';
+import xss from 'xss';
 export const adminRouter = express.Router();
 
 async function indexRoute(req, res) {
@@ -74,7 +75,7 @@ adminRouter.post('/skra', skraRouteInsert);
 
 adminRouter.post(
   '/login',
-
+  // login sanitize not necessary
   // Þetta notar strat að ofan til að skrá notanda inn
   passport.authenticate('local', {
     failureRedirect: '/login',
@@ -83,7 +84,9 @@ adminRouter.post(
   })
 );
 adminRouter.post('/admin/add-game', ensureLoggedIn, async (req, res) => {
-  const { date, home, away } = req.body;
+  const date = req.body.date; // Assuming date handling is safe
+  const home = xss(req.body.home); // Sanitize input
+  const away = xss(req.body.away); // Sanitize input
   // Parse scores as integers
   const home_score = parseInt(req.body.home_score, 10);
   const away_score = parseInt(req.body.away_score, 10);
