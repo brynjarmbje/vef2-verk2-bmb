@@ -100,7 +100,11 @@ adminRouter.post('/admin/add-game', ensureLoggedIn, async (req, res) => {
     // Redirect back to the form with a message
     return res.status(400).send('Invalid scores provided.');
   }
-
+  const currentDate = new Date();
+  const gameDate = new Date(date);
+  if (gameDate > currentDate) {
+    return res.status(400).send('Game date must be in the past.');
+  }
   try {
     await insertGame(date, home, away, homeScore, awayScore);
     // Redirect to the games list page or wherever appropriate
