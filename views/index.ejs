@@ -2,6 +2,16 @@
 
 <%- include('header') -%>
 
+<% if (isAuthenticated) { %>
+  <% if (isAdmin) { %>
+    <p>Þú ert skráður inn sem admin.</p>
+  <% } else { %>
+    <p>Þú ert skráður inn.</p>
+  <% } %>
+<% } else { %>
+  <p>Þú ert ekki innskráður notandi.</p>
+<% } %>
+
 <section>
   <h2>Umsjónarsíða</h2>
   <p>Innskráningar krafið til að eiga við gögn:</p>

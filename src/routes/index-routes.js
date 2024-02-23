@@ -5,9 +5,17 @@ import { getGames, getStandings } from '../lib/db.js';
 export const indexRouter = express.Router();
 
 async function indexRoute(req, res) {
+  const isAuthenticated = req.isAuthenticated();
+  const user = req.user ?? null; // Safely handle the case where user might not be defined
+
+  // Pass isAuthenticated and user to the view
   return res.render('index', {
-    title: 'Forsíða',
+    title: isAuthenticated ? 'Welcome Back!' : 'Forsíða',
+    isAuthenticated,
+    user,
     time: new Date().toISOString(),
+    // Optionally add a flag or user role info if needed for the view
+    isAdmin: isAuthenticated && user && user.role === 'admin'
   });
 }
 
